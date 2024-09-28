@@ -1,0 +1,434 @@
+definitions:
+  api.Error:
+    properties:
+      code:
+        $ref: '#/definitions/serr.ErrorCode'
+      message:
+        type: string
+      trace_id:
+        type: string
+    type: object
+  dto.BuyAssetRequest:
+    properties:
+      amount:
+        type: number
+      asset_type:
+        type: string
+      price:
+        type: number
+    required:
+    - amount
+    - asset_type
+    - price
+    type: object
+  dto.CreateInventoryAdminRequest:
+    properties:
+      asset_type:
+        type: string
+      quantity:
+        type: number
+    required:
+    - asset_type
+    - quantity
+    type: object
+  dto.SellAssetRequest:
+    properties:
+      amount:
+        type: number
+      asset_type:
+        type: string
+      price:
+        type: number
+    required:
+    - amount
+    - asset_type
+    - price
+    type: object
+  entity.AssetType:
+    enum:
+    - gold
+    type: string
+    x-enum-varnames:
+    - AssetTypeGold
+  entity.Inventory:
+    properties:
+      assetType:
+        $ref: '#/definitions/entity.AssetType'
+      createdAt:
+        type: string
+      id:
+        type: integer
+      totalQuantity:
+        type: number
+      updatedAt:
+        type: string
+    type: object
+  entity.Transaction:
+    properties:
+      assetType:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: integer
+      price:
+        type: number
+      quantity:
+        type: number
+      status:
+        $ref: '#/definitions/entity.TransactionStatus'
+      transactionType:
+        $ref: '#/definitions/entity.TransactionType'
+      updatedAt:
+        type: string
+      userID:
+        type: integer
+    type: object
+  entity.TransactionStatus:
+    enum:
+    - Pending
+    - Completed
+    - Cancelled
+    - BalancePending
+    - Failed
+    type: string
+    x-enum-varnames:
+    - TransactionStatusPending
+    - TransactionStatusCompleted
+    - TransactionStatusCancelled
+    - TransactionStatusBalancePending
+    - TransactionStatusFailed
+  entity.TransactionType:
+    enum:
+    - Buy
+    - Sell
+    type: string
+    x-enum-varnames:
+    - TransactionTypeBuy
+    - TransactionTypeSell
+  serr.ErrorCode:
+    enum:
+    - INTERNAL
+    - REACH_LIMIT
+    - INVALID_USER
+    - INVALID_TIME
+    - INVALID_INPUT
+    - INVALID_OTP
+    type: string
+    x-enum-varnames:
+    - ErrInternal
+    - ErrReachLimit
+    - ErrInvalidUser
+    - ErrInvalidTime
+    - ErrInvalidInput
+    - ErrInvalidOTP
+info:
+  contact: {}
+paths:
+  /admin/inventory:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the current inventory for all asset types.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Inventory retrieved successfully
+          schema:
+            additionalProperties:
+              items:
+                $ref: '#/definitions/entity.Inventory'
+              type: array
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Get all inventory
+      tags:
+      - Admin Inventory
+    post:
+      consumes:
+      - application/json
+      description: Allows an admin to create a new inventory by specifying the asset
+        type and quantity.
+      parameters:
+      - description: Create inventory request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateInventoryAdminRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Inventory created successfully with ID
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Create new inventory
+      tags:
+      - Admin Inventory
+  /admin/inventory/{assetType}:
+    delete:
+      consumes:
+      - application/json
+      description: Allows an admin to delete an inventory by asset type.
+      parameters:
+      - description: Asset type to delete from inventory
+        in: path
+        name: assetType
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Inventory deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid asset type
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "404":
+          description: Asset not found
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Delete an inventory
+      tags:
+      - Admin Inventory
+  /admin/transactions:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of all transactions for admins.
+      parameters:
+      - description: Limit the number of results (default is 10)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset for pagination (default is 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transactions retrieved successfully
+          schema:
+            additionalProperties:
+              items:
+                $ref: '#/definitions/entity.Transaction'
+              type: array
+            type: object
+        "400":
+          description: Invalid limit or offset
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Get all transactions with pagination
+      tags:
+      - Admin Transactions
+  /admin/transactions/{userID}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of transactions for a specific user by their ID.
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User transactions retrieved successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "404":
+          description: Transactions not found
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Get transactions for a specific user
+      tags:
+      - Admin Transactions
+  /trades/buy:
+    post:
+      consumes:
+      - application/json
+      description: Allows a user to buy a specific asset by providing asset type,
+        amount, and price.
+      parameters:
+      - description: Buy asset request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.BuyAssetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Asset bought successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Buy an asset
+      tags:
+      - Inventory
+  /trades/sell:
+    post:
+      consumes:
+      - application/json
+      description: Allows a user to sell a specific asset by providing asset type,
+        amount, and price.
+      parameters:
+      - description: Sell asset request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SellAssetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Asset sold successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Sell an asset
+      tags:
+      - Inventory
+  /trades/transactions:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all transactions for the authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User transactions retrieved successfully
+          schema:
+            additionalProperties:
+              items:
+                $ref: '#/definitions/entity.Transaction'
+              type: array
+            type: object
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Get transactions for the authenticated user
+      tags:
+      - User Transactions
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

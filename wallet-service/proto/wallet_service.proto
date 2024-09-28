@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package wallet;
+
+option go_package = "goldvault/wallet-service/proto;proto";
+
+// WalletService defines the gRPC service for wallet operations
+service WalletService {
+  // Creates a new wallet for a user
+  rpc CreateWallet (CreateWalletRequest) returns (CreateWalletResponse);
+
+  // Updates a wallet for a user
+  rpc UpdateAssetBalance(UpdateAssetBalanceRequest) returns (UpdateAssetBalanceResponse);
+
+  // Get asset balance for a user
+  rpc GetAssetBalance(GetAssetBalanceRequest) returns (GetAssetBalanceResponse);
+
+  // Withdraws an amount from a wallet
+  rpc Withdraw(WithdrawRequest) returns (WithdrawResponse);
+
+  // Deposits an amount to a wallet
+  rpc Deposit(DepositRequest) returns (DepositResponse);
+}
+
+// Message definitions for Wallet operations
+
+message CreateWalletRequest {
+  int64 user_id = 1; // User ID for whom the wallet is being created
+}
+
+message CreateWalletResponse {
+  int64 wallet_id = 1; // ID of the newly created wallet
+}
+
+message UpdateAssetBalanceRequest {
+  int64 user_id = 1; // User ID for whom the wallet is being updated
+  string asset_type = 2; // Type of asset to be updated
+  double amount = 3; // Amount to be updated
+}
+
+message UpdateAssetBalanceResponse {}
+
+message WithdrawRequest {
+  int64 user_id = 1; // User ID for whom the wallet is being updated
+  string asset_type = 2; // Type of asset to be withdrawn
+  double amount = 3; // Amount to be withdrawn
+}
+
+message WithdrawResponse {}
+
+message DepositRequest {
+  int64 user_id = 1; // User ID for whom the wallet is being updated
+  string asset_type = 2; // Type of asset to be deposited
+  double amount = 3; // Amount to be deposited
+}
+
+message DepositResponse {}
+
+message GetAssetBalanceRequest {
+  int64 user_id = 1; // User ID for whom the wallet is being updated
+  string asset_type = 2; // Type of asset to be deposited
+}
+
+message GetAssetBalanceResponse {
+  double balance = 1; // Balance of the asset
+}

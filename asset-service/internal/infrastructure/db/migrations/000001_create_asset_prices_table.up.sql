@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS asset_prices (
+    id SERIAL PRIMARY KEY,
+    asset_type VARCHAR(20) NOT NULL UNIQUE,  -- e.g., 'gold', 'USD'
+    buy_price NUMERIC(20, 2) NOT NULL,
+    sell_price NUMERIC(20, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

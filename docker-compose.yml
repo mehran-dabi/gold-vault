@@ -1,0 +1,181 @@
+services:
+  asset-service:
+    build:
+      context: ./asset-service  # Path to the asset service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"  # external HTTP
+      - "8082:8082"  # internal HTTP
+      - "50051:50051"  # gRPC
+    environment:
+      - DB_HOST=asset-postgres
+      - REDIS_HOST=asset-redis
+    networks:
+      - app-network
+    depends_on:
+      - asset-postgres
+      - asset-redis
+
+  asset-postgres:
+    image: postgres:latest
+    container_name: asset-service-pgsql
+    environment:
+      POSTGRES_DB: asset-service
+      POSTGRES_USER: pgsql
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5432:5432"
+    volumes:
+      - asset_postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  asset-redis:
+    image: redis:latest
+    container_name: asset-service-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - asset_redis_data:/data
+    networks:
+      - app-network
+
+  wallet-service:
+    build:
+      context: ./wallet-service  # Path to the wallet service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8081"  # external HTTP
+      - "8084:8082"  # internal HTTP
+      - "50052:50051"  # gRPC
+    environment:
+      - DB_HOST=wallet-postgres
+      - REDIS_HOST=wallet-redis
+    networks:
+      - app-network
+    depends_on:
+      - wallet-postgres
+      - wallet-redis
+      - asset-service
+
+  wallet-postgres:
+    image: postgres:latest
+    container_name: wallet-service-pgsql
+    environment:
+      POSTGRES_DB: wallet-service
+      POSTGRES_USER: pgsql
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5433:5432"
+    volumes:
+      - wallet_postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  wallet-redis:
+    image: redis:latest
+    container_name: wallet-service-cache
+    ports:
+      - "6380:6379"
+    volumes:
+      - wallet_redis_data:/data
+    networks:
+      - app-network
+
+  user-service:
+    build:
+      context: ./user-service  # Path to the user service
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8081"  # external HTTP
+      - "8086:8082"  # internal HTTP
+      - "50053:50051"  # gRPC
+    environment:
+      - DB_HOST=user-postgres
+      - REDIS_HOST=user-redis
+    networks:
+      - app-network
+    depends_on:
+      - user-postgres
+      - user-redis
+      - wallet-service
+
+  user-postgres:
+    image: postgres:latest
+    container_name: user-service-pgsql
+    environment:
+      POSTGRES_DB: user-service
+      POSTGRES_USER: pgsql
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5434:5432"
+    volumes:
+      - user_postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  user-redis:
+    image: redis:latest
+    container_name: user-service-cache
+    ports:
+      - "6381:6379"
+    volumes:
+      - user_redis_data:/data
+    networks:
+      - app-network
+
+  trading-service:
+    build:
+      context: ./trading-service  # Path to the trading service
+      dockerfile: Dockerfile
+    ports:
+      - "8087:8081"  # external HTTP
+      - "8088:8082"  # internal HTTP
+      - "50054:50051"  # gRPC
+    environment:
+      - DB_HOST=trading-postgres
+      - REDIS_HOST=trading-redis
+    networks:
+      - app-network
+    depends_on:
+      - trading-postgres
+      - trading-redis
+      - user-service
+
+  trading-postgres:
+    image: postgres:latest
+    container_name: trading-service-pgsql
+    environment:
+      POSTGRES_DB: trading-service
+      POSTGRES_USER: pgsql
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5435:5432"
+    volumes:
+      - trading_postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  trading-redis:
+    image: redis:latest
+    container_name: trading-service-cache
+    ports:
+      - "6382:6379"
+    volumes:
+      - trading_redis_data:/data
+    networks:
+      - app-network
+
+volumes:
+  asset_postgres_data:
+  asset_redis_data:
+  wallet_postgres_data:
+  wallet_redis_data:
+  user_postgres_data:
+  user_redis_data:
+  trading_postgres_data:
+  trading_redis_data:
+
+networks:
+  app-network:
+    driver: bridge

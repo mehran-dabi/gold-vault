@@ -1,0 +1,298 @@
+definitions:
+  api.Error:
+    properties:
+      code:
+        $ref: '#/definitions/serr.ErrorCode'
+      message:
+        type: string
+      trace_id:
+        type: string
+    type: object
+  entity.Asset:
+    properties:
+      balance:
+        description: Asset balance
+        type: number
+      created_at:
+        type: string
+      id:
+        type: integer
+      total_price:
+        description: Total price of the asset
+        type: number
+      type:
+        description: Type of asset, e.g., 'gold', 'USD'
+        type: string
+      updated_at:
+        type: string
+      wallet_id:
+        type: integer
+    type: object
+  entity.Transaction:
+    properties:
+      amount:
+        type: number
+      asset_id:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      status:
+        $ref: '#/definitions/entity.TxStatus'
+      type:
+        $ref: '#/definitions/entity.TxType'
+      wallet_id:
+        type: integer
+    type: object
+  entity.TxStatus:
+    enum:
+    - pending
+    - success
+    - failed
+    type: string
+    x-enum-varnames:
+    - TxPending
+    - TxSuccess
+    - TxFailed
+  entity.TxType:
+    enum:
+    - credit
+    - debit
+    type: string
+    x-enum-varnames:
+    - TxTypeCredit
+    - TxTypeDebit
+  entity.Wallet:
+    properties:
+      assets:
+        description: Holds multiple types of assets
+        items:
+          $ref: '#/definitions/entity.Asset'
+        type: array
+      created_at:
+        type: string
+      id:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  serr.ErrorCode:
+    enum:
+    - INTERNAL
+    - REACH_LIMIT
+    - INVALID_USER
+    - INVALID_TIME
+    - INVALID_INPUT
+    - INVALID_OTP
+    - UNAUTHORIZED
+    type: string
+    x-enum-varnames:
+    - ErrInternal
+    - ErrReachLimit
+    - ErrInvalidUser
+    - ErrInvalidTime
+    - ErrInvalidInput
+    - ErrInvalidOTP
+    - ErrUnAuthorized
+info:
+  contact: {}
+paths:
+  /admin/transactions:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all transactions with pagination for admins.
+      parameters:
+      - description: Limit the number of results
+        in: query
+        name: limit
+        type: integer
+      - description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of transactions retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/entity.Transaction'
+            type: array
+        "400":
+          description: Invalid pagination parameters
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Get all transactions with pagination
+      tags:
+      - Admin Transactions
+  /admin/wallets:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of wallets with pagination for admins.
+      parameters:
+      - description: Limit the number of results
+        in: query
+        name: limit
+        type: integer
+      - description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of wallets retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/entity.Wallet'
+            type: array
+        "400":
+          description: Invalid pagination parameters
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Get all wallets with pagination
+      tags:
+      - Admin Wallets
+  /admin/wallets/users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the wallet of a specific user by their user ID for admins.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Wallet retrieved successfully
+          schema:
+            $ref: '#/definitions/entity.Wallet'
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "404":
+          description: Wallet not found
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Get a specific wallet by user ID
+      tags:
+      - Admin Wallets
+  /wallets:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the wallet information of the authenticated user by their
+        ID.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Wallet retrieved successfully
+          schema:
+            $ref: '#/definitions/entity.Wallet'
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "404":
+          description: Wallet not found
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Get user wallet
+      tags:
+      - Wallets
+  /wallets/transactions:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all transactions for a specific wallet by wallet ID.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of transactions
+          schema:
+            items:
+              $ref: '#/definitions/entity.Transaction'
+            type: array
+        "400":
+          description: Invalid wallet ID
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "404":
+          description: Wallet not found
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Get wallet transactions
+      tags:
+      - Wallets
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

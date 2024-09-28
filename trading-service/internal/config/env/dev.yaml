@@ -1,0 +1,66 @@
+env: "dev"
+name: "trading-service"
+server:
+  ports:
+    external: "8081"
+    internal: "8082"
+    grpc: "50051"
+  debug: true
+#DATABASE
+db:
+  postgres:
+    name: "trading-service"
+    host: "trading-postgres"
+    port: "5432"
+    user: "pgsql"
+    password: "123456"
+    debug: true
+    maxIdleConn: "5"
+    maxOpenConn: "10"
+    migrationsPath: "internal/infrastructure/db/migrations"
+cache:
+  redis:
+    host: "trading-redis"
+    port: "6379"
+    password: ""
+    cacheDB: "0"
+    rateLimitDB: "1"
+    poolSize: "10"
+    minIdleConns: "5"
+    maxConnAge: "0"
+    poolTimeout: "4s"
+    idleTimeout: "5m"
+    readTimeout: "3s"
+    writeTimeout: "3s"
+    maxRetries: "3"
+    minRetryBackoff: "8ms"
+    maxRetryBackoff: "512ms"
+    dialTimeout: "5s"
+    debug: true
+    rateLimit:
+      limit: 5           # Maximum number of requests allowed in the window
+      window: "10m"      # Time window for the rate limit (e.g., 10 minutes)
+      keyPrefix: "otp_rate_limit"  # Prefix for Redis key to avoid collision
+
+jwt:
+  secret-key: "secret"
+  access-token-expiry: "15m"
+  refresh-token-expiry: "168h" # 7 days
+
+app:
+  cors:
+    allow-origins: "*"
+    allow-methods: "GET,POST,PUT,DELETE,OPTIONS"
+    allow-headers: "Accept,Authorization,Content-Type,Origin,channel,product,x-auth-id,experiment-keys,user-tracking-key"
+    allow-credentials: "true"
+  consumer-group-hotel: "hotel.search.consumer"
+  consumer-group-villa: "villa.search.consumer"
+api:
+  asset-service:
+    internal: "http://asset-service:8081"
+    external: "http://asset-service:8082"
+    grpc: "asset-service:50051"
+  wallet-service:
+    internal: "http://wallet-service:8081"
+    external: "http://wallet-service:8082"
+    grpc: "wallet-service:50051"

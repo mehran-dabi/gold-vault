@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "goldvault/asset-service/proto;proto";
+
+// AssetService defines the gRPC service for asset pricing
+service AssetService {
+  // Get the latest price for a given asset type
+  rpc GetAssetPrice (AssetPriceRequest) returns (AssetPriceResponse);
+}
+
+// Request and Response definitions
+
+message AssetPriceRequest {
+  repeated string asset_types = 1; // e.g. ["gold", "silver"]
+}
+
+message PriceDetails {
+  double buy = 1;
+  double sell = 2;
+}
+
+message AssetPriceResponse {
+  map<string, PriceDetails> prices = 1; // e.g. {"gold": {"buy": 1234.56, "sell": 1234.00}}
+}

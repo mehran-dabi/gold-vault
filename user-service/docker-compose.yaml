@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: user-service-pgsql
+    environment:
+      POSTGRES_DB: user-service
+      POSTGRES_USER: pgsql
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5432:5432" # Maps host port 5432 to container port 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - redis-network
+
+  redis:
+    image: redis:latest
+    container_name: user-service-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - redis-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  redis-network:
+    driver: bridge

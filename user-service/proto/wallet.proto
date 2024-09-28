@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+package wallet;
+
+option go_package = "goldvault/wallet-service/proto;proto";
+
+// WalletService defines the gRPC service for wallet operations
+service WalletService {
+  // Creates a new wallet for a user
+  rpc CreateWallet (CreateWalletRequest) returns (CreateWalletResponse);
+
+  // Retrieves wallet details by user ID
+  rpc GetWallet (GetWalletRequest) returns (GetWalletResponse);
+
+  // Adds a new asset to the wallet
+  rpc AddAsset (AddAssetRequest) returns (AddAssetResponse);
+
+  // Lists all assets in a wallet
+  rpc ListAssets (ListAssetsRequest) returns (ListAssetsResponse);
+
+  // Creates a new transaction
+  rpc CreateTransaction (CreateTransactionRequest) returns (CreateTransactionResponse);
+
+  // Lists transactions for a wallet
+  rpc ListTransactions (ListTransactionsRequest) returns (ListTransactionsResponse);
+}
+
+// Message definitions for Wallet operations
+
+message CreateWalletRequest {
+  int64 user_id = 1; // User ID for whom the wallet is being created
+}
+
+message CreateWalletResponse {
+  int64 wallet_id = 1; // ID of the newly created wallet
+}
+
+message GetWalletRequest {
+  int64 user_id = 1; // User ID to fetch the wallet for
+}
+
+message GetWalletResponse {
+  int64 wallet_id = 1;
+  int64 user_id = 2;
+  string created_at = 3;
+  string updated_at = 4;
+}
+
+message AddAssetRequest {
+  int64 wallet_id = 1;
+  string type = 2;  // Type of the asset, e.g., 'gold', 'Bitcoin'
+  float balance = 3; // Initial balance of the asset
+}
+
+message AddAssetResponse {
+  int64 asset_id = 1; // ID of the added asset
+}
+
+message ListAssetsRequest {
+  int64 wallet_id = 1; // Wallet ID to list assets for
+}
+
+message ListAssetsResponse {
+  repeated Asset assets = 1; // List of assets in the wallet
+}
+
+message CreateTransactionRequest {
+  int64 wallet_id = 1;
+  int64 asset_id = 2;
+  string type = 3; // 'credit' or 'debit'
+  float amount = 4; // Amount of the transaction
+  string description = 5; // Optional description
+}
+
+message CreateTransactionResponse {
+  int64 transaction_id = 1; // ID of the created transaction
+}
+
+message ListTransactionsRequest {
+  int64 wallet_id = 1; // Wallet ID to list transactions for
+}
+
+message ListTransactionsResponse {
+  repeated Transaction transactions = 1; // List of transactions
+}
+
+// Message definitions for Assets and Transactions
+
+message Asset {
+  int64 id = 1;
+  int64 wallet_id = 2;
+  string type = 3; // Asset type, e.g., 'gold', 'USD'
+  float balance = 4; // Balance of the asset
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+message Transaction {
+  int64 id = 1;
+  int64 wallet_id = 2;
+  int64 asset_id = 3;
+  string type = 4; // 'credit' or 'debit'
+  float amount = 5;
+  string description = 6;
+  string created_at = 7;
+}

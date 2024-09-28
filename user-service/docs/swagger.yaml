@@ -1,0 +1,395 @@
+definitions:
+  api.Error:
+    properties:
+      code:
+        $ref: '#/definitions/serr.ErrorCode'
+      message:
+        type: string
+      trace_id:
+        type: string
+    type: object
+  dto.AddUserBankCardRequest:
+    properties:
+      card_number:
+        type: string
+    required:
+    - card_number
+    type: object
+  dto.GenerateOTPRequest:
+    properties:
+      phone_number:
+        type: string
+    required:
+    - phone_number
+    type: object
+  dto.UpdateUserRequest:
+    properties:
+      birthday:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      national_code:
+        type: string
+    type: object
+  dto.ValidateOTPRequest:
+    properties:
+      otp:
+        type: string
+      phone_number:
+        type: string
+    required:
+    - otp
+    - phone_number
+    type: object
+  entity.Roles:
+    enum:
+    - admin
+    - customer
+    type: string
+    x-enum-varnames:
+    - RoleAdmin
+    - RoleCustomer
+  entity.User:
+    properties:
+      birthday:
+        type: string
+      createdAt:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: integer
+      isVerified:
+        type: boolean
+      lastName:
+        type: string
+      nationalCode:
+        type: string
+      phone:
+        type: string
+      role:
+        $ref: '#/definitions/entity.Roles'
+      updatedAt:
+        type: string
+    type: object
+  serr.ErrorCode:
+    enum:
+    - INTERNAL
+    - REACH_LIMIT
+    - INVALID_USER
+    - INVALID_TIME
+    - INVALID_INPUT
+    - INVALID_OTP
+    type: string
+    x-enum-varnames:
+    - ErrInternal
+    - ErrReachLimit
+    - ErrInvalidUser
+    - ErrInvalidTime
+    - ErrInvalidInput
+    - ErrInvalidOTP
+info:
+  contact: {}
+paths:
+  /admin/users:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of users for admins.
+      parameters:
+      - description: Limit the number of results (default is 10)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset for pagination (default is 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/entity.User'
+            type: array
+        "400":
+          description: Invalid limit or offset
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Get list of users with pagination
+      tags:
+      - Admin Users
+  /admin/users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the profile of a user by their ID.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile retrieved successfully
+          schema:
+            $ref: '#/definitions/entity.User'
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/api.Error'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Get user profile
+      tags:
+      - Admin Users
+    patch:
+      consumes:
+      - application/json
+      description: Updates the profile of a user by their ID.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated user data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile updated successfully
+        "400":
+          description: Invalid user ID or input data
+          schema:
+            $ref: '#/definitions/api.Error'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Update user profile
+      tags:
+      - Admin Users
+  /auth/otp:
+    post:
+      consumes:
+      - application/json
+      description: Sends a one-time password to the user's phone
+      parameters:
+      - description: Generate OTP Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.GenerateOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.Error'
+      summary: Sends a one-time password to the user's phone
+      tags:
+      - Auth
+  /auth/otp/validate:
+    post:
+      consumes:
+      - application/json
+      description: Validates the one-time password sent to the user's phone
+      parameters:
+      - description: Validate OTP Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ValidateOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.Error'
+      summary: Validates the one-time password sent to the user's phone
+      tags:
+      - Auth
+  /users/bank-cards:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all bank cards for the authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of user's bank cards
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Get bank cards for the user
+      tags:
+      - User Bank Cards
+    post:
+      consumes:
+      - application/json
+      description: Adds a new bank card for the authenticated user.
+      parameters:
+      - description: Add bank card request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddUserBankCardRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Bank card added successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Add a bank card for the user
+      tags:
+      - User Bank Cards
+  /users/me:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the profile of a user by their ID.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile retrieved successfully
+          schema:
+            $ref: '#/definitions/entity.User'
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/api.Error'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Get user profile
+      tags:
+      - Users
+    patch:
+      consumes:
+      - application/json
+      description: Updates the profile of a user by their ID.
+      parameters:
+      - description: Updated user data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile updated successfully
+        "400":
+          description: Invalid user ID or input data
+          schema:
+            $ref: '#/definitions/api.Error'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Update user profile
+      tags:
+      - Users
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

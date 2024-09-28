@@ -1,0 +1,311 @@
+definitions:
+  api.Error:
+    properties:
+      code:
+        $ref: '#/definitions/serr.ErrorCode'
+      message:
+        type: string
+      trace_id:
+        type: string
+    type: object
+  dto.UpsertAssetPrice:
+    properties:
+      asset_type:
+        type: string
+      buy_price:
+        type: number
+      sell_price:
+        type: number
+    required:
+    - asset_type
+    - buy_price
+    - sell_price
+    type: object
+  entity.AssetType:
+    enum:
+    - mesghal
+    - sekke
+    - sekke_bahar
+    - nim_sekke
+    - rob
+    - gerami
+    - other
+    - pose
+    - nim_under_80_to_85
+    - rob_under_80_to_85
+    - parsian_100
+    - parsian_200
+    - parsian_300
+    - parsian_400
+    - parsian_500
+    - parsian_600
+    - parsian_700
+    - parsian_800
+    - parsian_900
+    - parsian_1000
+    - IRR
+    type: string
+    x-enum-varnames:
+    - AssetTypeMesghal
+    - AssetTypeSekke
+    - AssetTypeSekkeBahar
+    - AssetTypeNimSekke
+    - AssetTypeRob
+    - AssetTypeGerami
+    - AssetTypeOther
+    - AssetTypePose
+    - AssetTypeNimUnder80To85
+    - AssetTypeRobUnder80To85
+    - AssetTypeParsian100
+    - AssetTypeParsian200
+    - AssetTypeParsian300
+    - AssetTypeParsian400
+    - AssetTypeParsian500
+    - AssetTypeParsian600
+    - AssetTypeParsian700
+    - AssetTypeParsian800
+    - AssetTypeParsian900
+    - AssetTypeParsian1000
+    - AssetTypeIRR
+  entity.PriceDetails:
+    properties:
+      buyPrice:
+        type: number
+      sellPrice:
+        type: number
+    type: object
+  entity.PriceHistory:
+    properties:
+      assetType:
+        $ref: '#/definitions/entity.AssetType'
+      createdAt:
+        type: string
+      id:
+        type: integer
+      prices:
+        $ref: '#/definitions/entity.PriceDetails'
+    type: object
+  serr.ErrorCode:
+    enum:
+    - INTERNAL
+    - REACH_LIMIT
+    - INVALID_USER
+    - INVALID_TIME
+    - INVALID_INPUT
+    - INVALID_OTP
+    type: string
+    x-enum-varnames:
+    - ErrInternal
+    - ErrReachLimit
+    - ErrInvalidUser
+    - ErrInvalidTime
+    - ErrInvalidInput
+    - ErrInvalidOTP
+info:
+  contact: {}
+paths:
+  /admin/asset-prices:
+    post:
+      consumes:
+      - application/json
+      description: Adds or updates the price of a specific asset for admins.
+      parameters:
+      - description: Upsert asset price request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpsertAssetPrice'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Price upserted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Upsert asset price
+      tags:
+      - Admin Asset Prices
+  /admin/asset-prices/{assetType}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes the price of a specific asset for admins.
+      parameters:
+      - description: Asset Type
+        in: path
+        name: assetType
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Price deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid asset ID
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "404":
+          description: Asset price not found
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Delete asset price
+      tags:
+      - Admin Asset Prices
+  /asset-prices:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the latest prices for all available assets.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Latest prices for all assets retrieved successfully
+          schema:
+            additionalProperties:
+              $ref: '#/definitions/entity.PriceDetails'
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Get all asset prices
+      tags:
+      - Asset Prices
+  /asset-prices/{assetType}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the latest price for a specific asset type.
+      parameters:
+      - description: Asset type (e.g., gold, silver)
+        in: path
+        name: assetType
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Latest price retrieved successfully
+          schema:
+            additionalProperties:
+              type: number
+            type: object
+        "400":
+          description: Asset type is required or invalid input
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "404":
+          description: Asset not found
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Get latest asset price
+      tags:
+      - Asset Prices
+  /price-history/{assetType}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the price history for a specific asset type with optional
+        pagination.
+      parameters:
+      - description: Asset type (e.g., gold, silver)
+        in: path
+        name: assetType
+        required: true
+        type: string
+      - description: Limit the number of results (default is 10)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset for pagination (default is 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Price history retrieved successfully
+          schema:
+            additionalProperties:
+              items:
+                $ref: '#/definitions/entity.PriceHistory'
+              type: array
+            type: object
+        "400":
+          description: Invalid limit or offset
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "404":
+          description: Asset price history not found
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Get asset price history
+      tags:
+      - Asset Price History
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
