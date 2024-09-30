@@ -42,6 +42,13 @@ cache:
       window: "10m"      # Time window for the rate limit (e.g., 10 minutes)
       keyPrefix: "otp_rate_limit"  # Prefix for Redis key to avoid collision
 
+storage:
+  minio:
+    endpoint: "user-minio:9000"
+    access-key: "minioadmin"
+    secret-key: "minioadmin"
+    use-ssl: false
+
 jwt:
   secret-key: "secret"
   access-token-expiry: "24h"

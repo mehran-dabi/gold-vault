@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"fmt"
+	"mime/multipart"
+	"net/http"
 
 	"goldvault/user-service/internal/core/application/ports"
 	"goldvault/user-service/internal/core/domain/entity"
@@ -104,4 +106,19 @@ func (u *UserService) AdminUpdateUser(ctx context.Context, request *dto.AdminUpd
 
 func (u *UserService) GetUsers(ctx context.Context, limit, offset int64) ([]*entity.User, error) {
 	return u.userDomain.GetUsers(ctx, limit, offset)
+}
+
+func (u *UserService) UploadNationalCard(ctx context.Context, userID int64, file multipart.File, fileExtension string) error {
+	objectName := fmt.Sprintf("%d-national-card-id%s", userID, fileExtension)
+	err := u.userDomain.UploadNationalCard(ctx, file, objectName)
+	if err != nil {
+		return serr.ServiceErr("UserService.UploadNationalCard", "failed to upload national card", err, http.StatusInternalServerError)
+	}
+
+	err = u.userDomain.UpdateNationalCardImage(ctx, userID, objectName)
+	if err != nil {
+		return serr.ServiceErr("UserService.UploadNationalCard", "failed to update national card image", err, http.StatusInternalServerError)
+	}
+
+	return nil
 }

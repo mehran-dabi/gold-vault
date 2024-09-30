@@ -6,7 +6,7 @@ const (
 	// CreateUser is a query to create a new user in the database and returns the id, created_at, and updated_at fields.
 	CreateUser = `
         INSERT INTO ` + models.UsersTableName + ` (` + models.UserColumnsNoID + `)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
         RETURNING id, created_at, updated_at;
     `
 
@@ -35,5 +35,12 @@ const (
 		SELECT ` + models.UserColumns + `
 		FROM ` + models.UsersTableName + `
 		LIMIT $1 OFFSET $2;
+	`
+
+	// UpdateUserNationalCardImage is a query to update a user's national card image.
+	UpdateUserNationalCardImage = `
+		UPDATE ` + models.UsersTableName + `
+		SET national_card_image = $1, updated_at = NOW()
+		WHERE id = $2;
 	`
 )

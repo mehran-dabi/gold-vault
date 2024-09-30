@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
    first_name VARCHAR(100),
    last_name VARCHAR(100),
    national_code VARCHAR(20) UNIQUE,
+   national_card_image VARCHAR(255) NOT NULL DEFAULT '',
    birthday DATE,
    role user_role DEFAULT 'customer',
    is_verified BOOLEAN DEFAULT FALSE,

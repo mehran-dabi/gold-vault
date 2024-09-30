@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"mime/multipart"
 	"time"
 
 	"goldvault/user-service/internal/core/application/ports"
@@ -11,10 +12,17 @@ import (
 
 type UserService struct {
 	userPersistence ports.UserPersistencePorts
+	fileStorage     ports.FileStorage
 }
 
-func NewUserService(userPersistence ports.UserPersistencePorts) ports.UserDomainPorts {
-	return &UserService{userPersistence: userPersistence}
+func NewUserService(
+	userPersistence ports.UserPersistencePorts,
+	fileStorage ports.FileStorage,
+) ports.UserDomainPorts {
+	return &UserService{
+		userPersistence: userPersistence,
+		fileStorage:     fileStorage,
+	}
 }
 
 func (u *UserService) CreateUser(ctx context.Context, phone string) (*entity.User, error) {
@@ -22,8 +30,6 @@ func (u *UserService) CreateUser(ctx context.Context, phone string) (*entity.Use
 		Phone:      phone,
 		Role:       entity.RoleCustomer,
 		IsVerified: true,
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
 	}
 
 	err := u.userPersistence.SaveUser(ctx, userEntity)
@@ -67,4 +73,23 @@ func (u *UserService) GetUsers(ctx context.Context, limit, offset int64) ([]*ent
 	}
 
 	return users, nil
+}
+
+func (u *UserService) UploadNationalCard(ctx context.Context, file multipart.File, objectName string) error {
+	bucketName := "national-card-ids"
+	err := u.fileStorage.UploadFile(ctx, bucketName, objectName, file)
+	if err != nil {
+		return fmt.Errorf("failed to upload national card: %w", err)
+	}
+
+	return nil
+}
+
+func (u *UserService) UpdateNationalCardImage(ctx context.Context, userID int64, image string) error {
+	err := u.userPersistence.UpdateNationalCardImage(ctx, userID, image)
+	if err != nil {
+		return fmt.Errorf("failed to update national card image: %w", err)
+	}
+
+	return nil
 }

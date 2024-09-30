@@ -20,6 +20,7 @@ func SetupUserRoutes(s *server.Server, u *UserHandler, au *AdminUserHandler, b *
 	{
 		users.GET("/me", u.GetProfile)
 		users.PATCH("/me", u.UpdateProfile)
+		users.POST("/me/national-card", u.UploadNationalCard)
 		bankCard := users.Group("/bank-cards")
 		{
 			bankCard.POST("", b.AddUserBankCard)

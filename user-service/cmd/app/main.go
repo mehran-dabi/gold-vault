@@ -7,6 +7,7 @@ import (
 	"goldvault/user-service/internal/infrastructure/cache"
 	"goldvault/user-service/internal/infrastructure/db"
 	"goldvault/user-service/internal/infrastructure/persistence"
+	"goldvault/user-service/internal/infrastructure/storage"
 	"goldvault/user-service/internal/interfaces/api"
 	"goldvault/user-service/internal/server"
 	"goldvault/user-service/pkg/logger"
@@ -31,6 +32,12 @@ func main() {
 			// redis
 			redisCache,
 			redisRateLimit,
+
+			// minio
+			minioStorage,
+
+			// storage
+			storage.NewFileStorage,
 
 			// persistence
 			persistence.NewUserPersistence,

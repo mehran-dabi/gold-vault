@@ -65,6 +65,8 @@ definitions:
         type: boolean
       lastName:
         type: string
+      nationalCardImage:
+        type: string
       nationalCode:
         type: string
       phone:
@@ -387,6 +389,44 @@ paths:
       summary: Update user profile
       tags:
       - Users
+  /users/me/national-card:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Allows the authenticated user to upload a file for their national
+        card.
+      parameters:
+      - description: National card file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: National card uploaded successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid file or user ID
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Upload national card
+      tags:
+      - User National Card
 securityDefinitions:
   BearerAuth:
     in: header

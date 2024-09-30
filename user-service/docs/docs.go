@@ -474,6 +474,64 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/users/me/national-card": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Allows the authenticated user to upload a file for their national card.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User National Card"
+                ],
+                "summary": "Upload national card",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "National card file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "National card uploaded successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid file or user ID",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -575,6 +633,9 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "lastName": {
+                    "type": "string"
+                },
+                "nationalCardImage": {
                     "type": "string"
                 },
                 "nationalCode": {

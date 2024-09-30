@@ -24,6 +24,7 @@ type Config struct {
 	Server   ServerConfig   `mapstructure:"server"`
 	Database DatabaseConfig `mapstructure:"db"`
 	Cache    CacheConfig    `mapstructure:"cache"`
+	Storage  StorageConfig  `mapstructure:"storage"`
 	JWT      JWTConfig      `mapstructure:"jwt"`
 	App      AppConfig      `mapstructure:"app"`
 	API      APIConfig      `mapstructure:"api"`
@@ -63,6 +64,15 @@ type PostgresConfig struct {
 // CacheConfig holds cache-related configuration
 type CacheConfig struct {
 	Redis RedisConfig `mapstructure:"redis"`
+}
+
+type StorageConfig struct {
+	Minio struct {
+		Endpoint  string `mapstructure:"endpoint"`
+		AccessKey string `mapstructure:"access-key"`
+		SecretKey string `mapstructure:"secret-key"`
+		UseSSL    bool   `mapstructure:"use-ssl"`
+	} `mapstructure:"minio"`
 }
 
 // RedisConfig holds Redis-related configuration

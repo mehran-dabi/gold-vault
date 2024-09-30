@@ -2,7 +2,9 @@ package api
 
 import (
 	"errors"
+	"mime/multipart"
 	"net/http"
+	"path/filepath"
 
 	"goldvault/user-service/pkg/serr"
 
@@ -47,5 +49,18 @@ func handleError(ctx *gin.Context, err error) {
 			Error{Code: serr.ErrInternal, Message: "internal server error"},
 		)
 		return
+	}
+}
+
+func getFileExtension(file *multipart.FileHeader) string {
+	contentType := file.Header.Get("Content-Type")
+
+	switch contentType {
+	case "image/jpeg", "image/jpg":
+		return ".jpg"
+	case "image/png":
+		return ".png"
+	default:
+		return filepath.Ext(file.Filename)
 	}
 }

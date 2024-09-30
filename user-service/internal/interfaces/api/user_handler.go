@@ -86,5 +86,59 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, nil)
+	c.JSON(http.StatusOK, gin.H{"message": "Profile updated successfully"})
+}
+
+// UploadNationalCard godoc
+// @Summary Upload national card
+// @Description Allows the authenticated user to upload a file for their national card.
+// @Tags User National Card
+// @Accept multipart/form-data
+// @Produce json
+// @Param file formData file true "National card file"
+// @Success 200 {object} map[string]string "National card uploaded successfully"
+// @Failure 400 {object} Error "Invalid file or user ID"
+// @Failure 401 {object} Error "Unauthorized"
+// @Failure 500 {object} Error "Internal server error"
+// @Security BearerAuth
+// @Router /users/me/national-card [post]
+func (h *UserHandler) UploadNationalCard(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		handleError(c, serr.ValidationErr("handler.UploadNationalCard",
+			"invalid file", serr.ErrInvalidInput))
+		return
+	}
+
+	// get the user ID from the context
+	userID := c.GetInt64("user_id")
+	if userID == 0 {
+		handleError(c, serr.ValidationErr("handler.UploadNationalCard",
+			"invalid user ID", serr.ErrInvalidInput))
+		return
+	}
+
+	// check file extension to be jpg or png or jpeg
+	fileExtension := getFileExtension(file)
+	if fileExtension != ".jpg" && fileExtension != ".png" {
+		handleError(c, serr.ValidationErr("handler.UploadNationalCard",
+			"invalid file type. Only jpg, jpeg, and png files are allowed", serr.ErrInvalidInput))
+		return
+	}
+
+	openFile, err := file.Open()
+	if err != nil {
+		handleError(c, serr.ValidationErr("handler.UploadNationalCard",
+			"failed to open file", serr.ErrInvalidInput))
+		return
+	}
+	defer openFile.Close()
+
+	err = h.userService.UploadNationalCard(c.Request.Context(), userID, openFile, fileExtension)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "National card uploaded successfully"})
 }

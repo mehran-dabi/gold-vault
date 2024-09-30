@@ -9,7 +9,10 @@ import (
 	"goldvault/user-service/internal/core/application/ports"
 	"goldvault/user-service/internal/infrastructure/cache"
 	"goldvault/user-service/internal/infrastructure/db"
+	"goldvault/user-service/internal/infrastructure/storage"
 	"goldvault/user-service/internal/server"
+
+	"github.com/minio/minio-go/v7"
 )
 
 func postgresDB() *sql.DB {
@@ -81,4 +84,18 @@ func walletServiceClient() ports.WalletClientPorts {
 
 func setupServer(s *server.Server, psql *sql.DB) {
 	s.SetHealthFunc(healthFunc(psql)).SetupRoutes()
+}
+
+func minioStorage() *minio.Client {
+	client, err := storage.NewMinioStorage(
+		config.ServiceConfig.Storage.Minio.Endpoint,
+		config.ServiceConfig.Storage.Minio.AccessKey,
+		config.ServiceConfig.Storage.Minio.SecretKey,
+		config.ServiceConfig.Storage.Minio.UseSSL,
+	)
+	if err != nil {
+		log.Fatalf("failed to initalize minio storage: %v", err)
+	}
+
+	return client
 }

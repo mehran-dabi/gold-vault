@@ -8,16 +8,17 @@ import (
 
 // User represents the user entity
 type User struct {
-	ID           int64
-	Phone        string
-	FirstName    string
-	LastName     string
-	NationalCode string
-	Birthday     time.Time
-	Role         Roles
-	IsVerified   bool
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	ID                int64
+	Phone             string
+	FirstName         string
+	LastName          string
+	NationalCode      string
+	NationalCardImage string
+	Birthday          time.Time
+	Role              Roles
+	IsVerified        bool
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
 }
 
 // Validate validates the User entity fields

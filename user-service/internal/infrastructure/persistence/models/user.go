@@ -8,22 +8,23 @@ import (
 )
 
 type User struct {
-	ID           int64
-	Phone        string
-	FirstName    string
-	LastName     string
-	Role         string
-	IsVerified   bool
-	NationalCode string
-	Birthday     time.Time
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	ID                int64
+	Phone             string
+	FirstName         string
+	LastName          string
+	Role              string
+	IsVerified        bool
+	NationalCode      string
+	NationalCardImage string
+	Birthday          time.Time
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
 }
 
 const (
 	UsersTableName  = "users"
-	UserColumns     = "id, phone, first_name, last_name, role, is_verified, national_code, birthday, created_at, updated_at"
-	UserColumnsNoID = "phone, first_name, last_name, role, is_verified, national_code, birthday, created_at, updated_at"
+	UserColumns     = "id, phone, first_name, last_name, role, is_verified, national_code, national_card_image, birthday, created_at, updated_at"
+	UserColumnsNoID = "phone, first_name, last_name, role, is_verified, national_code, national_card_image, birthday, created_at, updated_at"
 )
 
 func (u *User) Scan(scanner Scanner) error {
@@ -35,6 +36,7 @@ func (u *User) Scan(scanner Scanner) error {
 		&u.Role,
 		&u.IsVerified,
 		&u.NationalCode,
+		&u.NationalCardImage,
 		&u.Birthday,
 		&u.CreatedAt,
 		&u.UpdatedAt,
@@ -47,16 +49,17 @@ func ToUserDB(entity *entity.User) (*User, error) {
 	}
 
 	return &User{
-		ID:           entity.ID,
-		Phone:        entity.Phone,
-		FirstName:    entity.FirstName,
-		LastName:     entity.LastName,
-		Birthday:     entity.Birthday,
-		Role:         entity.Role.String(),
-		NationalCode: entity.NationalCode,
-		IsVerified:   entity.IsVerified,
-		CreatedAt:    entity.CreatedAt,
-		UpdatedAt:    entity.UpdatedAt,
+		ID:                entity.ID,
+		Phone:             entity.Phone,
+		FirstName:         entity.FirstName,
+		LastName:          entity.LastName,
+		Birthday:          entity.Birthday,
+		Role:              entity.Role.String(),
+		NationalCode:      entity.NationalCode,
+		NationalCardImage: entity.NationalCardImage,
+		IsVerified:        entity.IsVerified,
+		CreatedAt:         entity.CreatedAt,
+		UpdatedAt:         entity.UpdatedAt,
 	}, nil
 }
 
@@ -67,15 +70,16 @@ func (u *User) ToUserEntity() (*entity.User, error) {
 	}
 
 	return &entity.User{
-		ID:           u.ID,
-		Phone:        u.Phone,
-		FirstName:    u.FirstName,
-		LastName:     u.LastName,
-		Birthday:     u.Birthday,
-		Role:         entity.Roles(u.Role),
-		NationalCode: u.NationalCode,
-		IsVerified:   u.IsVerified,
-		CreatedAt:    u.CreatedAt,
-		UpdatedAt:    u.UpdatedAt,
+		ID:                u.ID,
+		Phone:             u.Phone,
+		FirstName:         u.FirstName,
+		LastName:          u.LastName,
+		Birthday:          u.Birthday,
+		Role:              entity.Roles(u.Role),
+		NationalCode:      u.NationalCode,
+		NationalCardImage: u.NationalCardImage,
+		IsVerified:        u.IsVerified,
+		CreatedAt:         u.CreatedAt,
+		UpdatedAt:         u.UpdatedAt,
 	}, nil
 }

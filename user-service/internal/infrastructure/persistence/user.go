@@ -39,9 +39,8 @@ func (p *UserPersistence) SaveUser(ctx context.Context, user *entity.User) error
 		dbModel.Role,
 		dbModel.IsVerified,
 		dbModel.NationalCode,
+		dbModel.NationalCardImage,
 		dbModel.Birthday,
-		dbModel.CreatedAt,
-		dbModel.UpdatedAt,
 	).Scan(&dbModel.ID, &dbModel.CreatedAt, &dbModel.UpdatedAt)
 	if err != nil {
 		return serr.DBError("SaveUser", "user_persistence_adapter", err)
@@ -145,4 +144,12 @@ func (p *UserPersistence) GetAllUsers(ctx context.Context, limit, offset int64) 
 	}
 
 	return users, nil
+}
+
+func (p *UserPersistence) UpdateNationalCardImage(ctx context.Context, userID int64, nationalCardImage string) error {
+	_, err := p.db.ExecContext(ctx, queries.UpdateUserNationalCardImage, nationalCardImage, userID)
+	if err != nil {
+		return serr.DBError("UpdateNationalCardImage", "user_persistence_adapter", err)
+	}
+	return nil
 }
