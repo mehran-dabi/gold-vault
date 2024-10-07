@@ -53,13 +53,13 @@ func (s *AuthService) VerifyOTPAndIssueToken(ctx context.Context, request *dto.V
 	}
 
 	// Validate the OTP
-	//isValid, err := s.otpService.ValidateOTP(ctx, request)
-	//if err != nil {
-	//	return "", fmt.Errorf("failed to validate OTP: %w", err)
-	//}
-	//if !isValid {
-	//	return "", fmt.Errorf("invalid or expired OTP")
-	//}
+	isValid, err := s.otpService.ValidateOTP(ctx, request)
+	if err != nil {
+		return "", fmt.Errorf("failed to validate OTP: %w", err)
+	}
+	if !isValid {
+		return "", fmt.Errorf("invalid or expired OTP")
+	}
 
 	// Retrieve the user from the database
 	user, err := s.userPersistence.FindUserByPhone(ctx, request.PhoneNumber)
