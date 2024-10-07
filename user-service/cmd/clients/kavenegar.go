@@ -39,6 +39,9 @@ func (c *KavenegarSMSProviderClient) SendSMS(ctx context.Context, sms entity.Sim
 		sms.Sender = c.Sender
 	}
 
+	if sms.Template == "" {
+		sms.Template = "default"
+	}
 	// Convert the struct to URL query parameters
 	queryParams, err := StructToQueryParams(sms)
 	if err != nil {
@@ -46,7 +49,7 @@ func (c *KavenegarSMSProviderClient) SendSMS(ctx context.Context, sms entity.Sim
 	}
 
 	request := APIRequest{
-		URL:    fmt.Sprintf("%s/%s/sms/send.json", c.Host, c.APIKey),
+		URL:    fmt.Sprintf("%s/%s/verify/lookup.json", c.Host, c.APIKey),
 		Method: http.MethodGet,
 		Params: queryParams,
 	}

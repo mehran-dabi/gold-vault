@@ -44,7 +44,7 @@ func (o *OTPApplicationService) GenerateAndSendOTP(ctx context.Context, request 
 
 	sms := entity.SimpleSMS{
 		Receptor: request.PhoneNumber,
-		Message:  code,
+		Token:    code,
 	}
 
 	if err := o.kavenegarSMSProvider.SendSMS(ctx, sms); err != nil {

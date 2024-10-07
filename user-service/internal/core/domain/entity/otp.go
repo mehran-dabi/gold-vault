@@ -42,6 +42,7 @@ func (o *OTP) Validate() error {
 
 type SimpleSMS struct {
 	Receptor string
-	Message  string
+	Token    string
+	Template string
 	Sender   string
 }
