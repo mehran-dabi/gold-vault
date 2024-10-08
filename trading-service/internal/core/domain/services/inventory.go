@@ -19,13 +19,13 @@ func NewInventoryDomainService(inventoryPersistence ports.InventoryPersistence) 
 	}
 }
 
-func (i *InventoryDomainService) Buy(ctx context.Context, tx *sql.Tx, assetType string, quantity float64) error {
+func (i *InventoryDomainService) Buy(ctx context.Context, tx *sql.Tx, assetType string, quantity float64, ignoreInv bool) error {
 	inventory, err := i.inventoryPersistence.GetInventoryForUpdate(ctx, tx, assetType)
 	if err != nil {
 		return err
 	}
 
-	if inventory.TotalQuantity < quantity {
+	if !ignoreInv && inventory.TotalQuantity < quantity {
 		return fmt.Errorf("insufficient inventory for asset type %s", assetType)
 	}
 

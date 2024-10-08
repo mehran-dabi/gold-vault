@@ -15,17 +15,20 @@ type InventoryService struct {
 	inventoryDomainService   ports.InventoryDomainService
 	transactionDomainService ports.TransactionDomainService
 	walletServiceClient      ports.WalletServiceClient
+	ignoreInvLimitCache      ports.IgnoreInventoryLimitCache
 }
 
 func NewInventoryService(
 	inventoryDomainService ports.InventoryDomainService,
 	transactionDomainService ports.TransactionDomainService,
 	walletServiceClient ports.WalletServiceClient,
+	ignoreInventoryLimitCache ports.IgnoreInventoryLimitCache,
 ) *InventoryService {
 	return &InventoryService{
 		inventoryDomainService:   inventoryDomainService,
 		transactionDomainService: transactionDomainService,
 		walletServiceClient:      walletServiceClient,
+		ignoreInvLimitCache:      ignoreInventoryLimitCache,
 	}
 }
 
@@ -48,6 +51,13 @@ func (i *InventoryService) BuyAsset(ctx context.Context, userID int64, assetType
 		return serr.ServiceErr("Inventory.BuyAsset", "insufficient balance to buy asset", nil, http.StatusBadRequest)
 	}
 
+	// check if the ignore inventory flag is set.
+	// this flag is used to ignore the inventory limit when buying an asset
+	ignoreInv, err := i.ignoreInvLimitCache.Get(ctx)
+	if err != nil {
+		return serr.ServiceErr("Inventory.BuyAsset", err.Error(), err, http.StatusInternalServerError)
+	}
+
 	err = db.Transaction(ctx, sql.LevelReadCommitted, func(tx *sql.Tx) error {
 		// log pending transaction
 		err := i.transactionDomainService.LogTransaction(ctx, tx, transaction)
@@ -55,7 +65,7 @@ func (i *InventoryService) BuyAsset(ctx context.Context, userID int64, assetType
 			return err
 		}
 
-		err = i.inventoryDomainService.Buy(ctx, tx, assetType, quantity)
+		err = i.inventoryDomainService.Buy(ctx, tx, assetType, quantity, ignoreInv)
 		if err != nil {
 			// update transaction to failed
 			if err := i.transactionDomainService.UpdateTransactionStatus(ctx, transaction.ID, entity.TransactionStatusFailed.String()); err != nil {

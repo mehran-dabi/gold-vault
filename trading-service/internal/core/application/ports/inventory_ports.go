@@ -18,7 +18,7 @@ type (
 
 	InventoryDomainService interface {
 		UpdateInventoryQuantity(ctx context.Context, tx *sql.Tx, assetType string, quantity float64) error
-		Buy(ctx context.Context, tx *sql.Tx, assetType string, quantity float64) error
+		Buy(ctx context.Context, tx *sql.Tx, assetType string, quantity float64, ignoreInv bool) error
 		Sell(ctx context.Context, tx *sql.Tx, assetType string, quantity float64) error
 		GetInventory(ctx context.Context) ([]*entity.Inventory, error)
 		CreateInventory(ctx context.Context, inventory *entity.Inventory) (int64, error)

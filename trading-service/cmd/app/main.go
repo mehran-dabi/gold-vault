@@ -4,6 +4,7 @@ import (
 	"goldvault/trading-service/internal/config"
 	appService "goldvault/trading-service/internal/core/application/services"
 	"goldvault/trading-service/internal/core/domain/services"
+	"goldvault/trading-service/internal/infrastructure/cache"
 	"goldvault/trading-service/internal/infrastructure/db"
 	"goldvault/trading-service/internal/infrastructure/persistence"
 	"goldvault/trading-service/internal/interfaces/api"
@@ -37,7 +38,7 @@ func main() {
 			persistence.NewInventoryPersistence,
 
 			// cache
-			//,
+			cache.NewIgnoreInventoryLimitCache,
 
 			// domain services
 			services.NewInventoryDomainService,
