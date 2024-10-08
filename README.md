@@ -1,39 +1,70 @@
-# Golang Hexagonal Architecture Example Microservice
+# GoldVault
 
-This repository is an example implementation of a microservice built with **Golang**, following the principles of **Hexagonal Architecture** (also known as Ports and Adapters). The service is designed to be clean, maintainable, and scalable, with a focus on separation of concerns and high testability.
+GoldVault is a backend service for a gold trading platform, allowing users to buy and sell assets like gold, manage their wallets, and view pricing information. The system is built using microservices with a focus on scalability, reliability, and performance.
 
-## Overview
+## Features
 
-This microservice demonstrates how to structure a Go application using hexagonal architecture, integrating with **PostgreSQL** as the primary database. The core business logic is decoupled from external dependencies, making it easier to adapt, test, and maintain.
-
-### Key Features
-
-- **Hexagonal Architecture**: The application is structured using the hexagonal architecture pattern, which separates the core business logic from external services like databases, APIs, etc.
-- **PostgreSQL Integration**: The microservice uses PostgreSQL as its database, with all interactions managed through a repository layer.
-- **Application Service Layer**: This implementation uses an application service layer to coordinate domain services, manage transactions, and handle the orchestration between different components of the application.
+- User management with OTP-based authentication.
+- Asset trading functionality with real-time price updates.
+- Wallet service allowing users to manage multiple asset types.
+- Separate microservices for handling users, assets, pricing, and trades.
+- Configurable system flag for allowing purchases even when inventory is low.
+- High scalability with gRPC, Redis, and PostgreSQL.
+- Optimized caching with Redis for handling high traffic on asset price requests.
 
 ## Architecture
 
-The project follows a well-defined directory structure based on hexagonal architecture principles:
+**GoldVault** is built using a microservices architecture with the following key components:
 
-- **/cmd**: Contains the application's entry point (main package).
-- **/internal**: Houses the core business logic, domain services and models(entity), and application services.
-- **/pkg**: Contains public and shared packages code.
-- **/docs**: Contains swagger's related documents.
+- User-Service: Manages user profiles, OTP authentication, and roles.
+- Wallet-Service: Manages user wallets, asset balances, and transaction histories.
+- Asset-Service: Provides up-to-date asset prices and handles price caching.
+- Trade-Service: Manages the trading system, including inventory management and transaction logging.
 
-## Getting Started
+The project follows a hexagonal architecture to separate business logic from infrastructure concerns. It also supports dependency injection using Uber's fx library.
 
-To get started with this project, ensure you have Go and PostgreSQL installed on your machine.
+## Technologies
 
-### Prerequisites
+- **Golang**: The primary programming language for backend services.
+- **PostgreSQL**: Used for persistence.
+- **Redis**: Used for caching asset prices and managing rate limits.
+- **gRPC**: Used for communication between microservices.
+- **Docker**: Containerizes the services for easy deployment.
+- **Uber Fx**: Dependency injection framework for Go.
+- **Swagger**: API documentation for the services.
 
-- Go 1.23+ installed
-- PostgreSQL installed and running
+## Folder Structure
 
-### Installation
+```
+.
+├── cmd
+│   ├── app
+│   └── clients
+├── internal
+│   ├── config
+│   ├── core
+│   │   ├── application
+│   │   │   └── services
+│   │   ├── domain
+│   │   │   └── entities
+│   │   └── infrastructure
+│   │       ├── db
+│   │       ├── cache
+│   │       └── persistence
+│   ├── interfaces
+│   │   ├── api
+│   │   └── dto
+│   └── server
+├── migrations
+└── proto
+```
 
-1. Clone the repository:
+## Contributing
+If you'd like to contribute to the project, feel free to open a pull request or raise an issue.
 
-   ```bash
-   git clone https://github.com/ashkanabbasii/golang_hexagonal_architecture.git
-   cd golang_hexagonal_architecture
+## License
+This project is licensed under the MIT License.
+
+
+
+
