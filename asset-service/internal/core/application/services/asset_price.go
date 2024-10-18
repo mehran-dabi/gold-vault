@@ -117,3 +117,25 @@ func (a *AssetPriceService) GetAllAssetPrices(ctx context.Context) (map[string]*
 
 	return prices, nil
 }
+
+func (a *AssetPriceService) GetPriceChangeStep(ctx context.Context) (float64, error) {
+	return a.priceCache.GetPriceChangeStep(ctx)
+}
+
+func (a *AssetPriceService) SetPriceChangeStep(ctx context.Context, step float64) error {
+	return a.priceCache.SetPriceChangeStep(ctx, step)
+}
+
+func (a *AssetPriceService) UpdateAssetPriceByStep(ctx context.Context, assetType string) error {
+	step, err := a.GetPriceChangeStep(ctx)
+	if err != nil {
+		return serr.ServiceErr("AssetPriceService.UpdateAssetPriceByStep", err.Error(), err, http.StatusInternalServerError)
+	}
+
+	err = a.assetPriceDomainService.UpdateAssetPriceByStep(ctx, step, assetType)
+	if err != nil {
+		return serr.ServiceErr("AssetPriceService.UpdateAssetPriceByStep", err.Error(), err, http.StatusInternalServerError)
+	}
+
+	return nil
+}

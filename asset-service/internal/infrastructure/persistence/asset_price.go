@@ -71,3 +71,12 @@ func (a *AssetPricePersistence) GetAllAssetPrices(ctx context.Context) (map[stri
 
 	return assetPrices, nil
 }
+
+func (a *AssetPricePersistence) UpdateAssetPriceByStep(ctx context.Context, step float64, assetType string) error {
+	_, err := a.db.ExecContext(ctx, queries.UpdateAssetPriceByStep, step, assetType)
+	if err != nil {
+		return serr.DBError("UpdateAssetPriceByStep", "asset_price", err)
+	}
+
+	return nil
+}

@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"goldvault/trading-service/internal/core/application/services"
 	"goldvault/trading-service/pkg/serr"
@@ -93,4 +94,61 @@ func (t *TransactionsAdminHandler) GetUserTransactions(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"transactions": txs})
+}
+
+// GetSingleDaySummary godoc
+// @Summary Get single day transaction summary
+// @Description Retrieves a summary of transactions for a specific asset type on a given date.
+// @Tags Admin Transactions
+// @Produce json
+// @Param date query string true "Date in YYYY-MM-DD format"
+// @Param assetType query string true "Asset type"
+// @Success 200 {object} map[string]interface{} "Summary of transactions for the day"
+// @Failure 400 {object} Error "Invalid date format or missing parameters"
+// @Failure 401 {object} Error "Unauthorized"
+// @Failure 500 {object} Error "Internal server error"
+// @Security BearerAuth
+// @Router /admin/transactions/summary/single-day [get]
+func (t *TransactionsAdminHandler) GetSingleDaySummary(c *gin.Context) {
+	dateStr := c.Query("date")
+	assetType := c.Query("assetType")
+
+	// Convert the string into a time.Time object
+	date, err := time.Parse(time.DateOnly, dateStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYY-MM-DD."})
+		return
+	}
+
+	summary, err := t.transactionService.GetSingleDaySummary(c.Request.Context(), date, assetType)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"summary": summary})
+}
+
+// GetTotalSummary godoc
+// @Summary Get total transaction summary
+// @Description Retrieves the total summary of all transactions for a specific asset type.
+// @Tags Admin Transactions
+// @Produce json
+// @Param assetType query string true "Asset type"
+// @Success 200 {object} map[string]interface{} "Total summary of transactions"
+// @Failure 400 {object} Error "Invalid asset type or missing parameters"
+// @Failure 401 {object} Error "Unauthorized"
+// @Failure 500 {object} Error "Internal server error"
+// @Security BearerAuth
+// @Router /admin/transactions/summary/total [get]
+func (t *TransactionsAdminHandler) GetTotalSummary(c *gin.Context) {
+	assetType := c.Query("assetType")
+
+	summary, err := t.transactionService.GetTotalSummary(c.Request.Context(), assetType)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"summary": summary})
 }

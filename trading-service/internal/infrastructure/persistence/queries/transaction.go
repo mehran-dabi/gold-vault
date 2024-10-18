@@ -26,4 +26,27 @@ const (
 		FROM ` + models.TransactionTableName + `
 		LIMIT $1 OFFSET $2;
 	`
+
+	GetTransactionsSummarySingleDay = `
+	SELECT 
+		SUM(CASE WHEN transaction_type = 'buy' THEN quantity ELSE 0 END) AS total_buys,
+		SUM(CASE WHEN transaction_type = 'sell' THEN quantity ELSE 0 END) AS total_sells
+	FROM 
+		` + models.TransactionTableName + `
+	WHERE 
+		DATE(created_at) = $1
+	    AND status = 'completed'
+		AND asset_type = $2;
+	`
+
+	GetTransactionsSummary = `
+	SELECT 
+		SUM(CASE WHEN transaction_type = 'buy' THEN quantity ELSE 0 END) AS total_buys,
+		SUM(CASE WHEN transaction_type = 'sell' THEN quantity ELSE 0 END) AS total_sells
+	FROM 
+		` + models.TransactionTableName + `
+	WHERE 
+		status = 'completed'
+		AND asset_type = $1;
+	`
 )

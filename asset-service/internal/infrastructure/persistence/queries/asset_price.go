@@ -26,4 +26,11 @@ const (
 		DELETE FROM ` + models.AssetPriceTableName + `
 		WHERE asset_type = $1;
 	`
+
+	UpdateAssetPriceByStep = `
+		UPDATE ` + models.AssetPriceTableName + `
+		SET buy_price = buy_price + $1, sell_price = sell_price + $1
+		WHERE asset_type = $2
+		RETURNING id;
+	`
 )

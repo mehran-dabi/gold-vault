@@ -8,6 +8,13 @@ definitions:
       trace_id:
         type: string
     type: object
+  dto.SetPriceChangeStep:
+    properties:
+      step:
+        type: number
+    required:
+    - step
+    type: object
   dto.UpsertAssetPrice:
     properties:
       asset_type:
@@ -104,6 +111,105 @@ definitions:
 info:
   contact: {}
 paths:
+  /admin/asset-price/{asset_type}/adjust-by-step:
+    put:
+      description: Updates the price of an asset by a predefined step for the specified
+        asset type.
+      parameters:
+      - description: Asset type
+        in: path
+        name: assetType
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Message indicating the price was updated
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid asset type or missing parameters
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Update asset price by step
+      tags:
+      - Admin Asset Price
+  /admin/asset-price/get-step:
+    get:
+      description: Retrieves the current step value used for price changes.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: The current price change step
+          schema:
+            additionalProperties:
+              type: number
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Get price change step
+      tags:
+      - Admin Asset Price
+  /admin/asset-price/set-step:
+    post:
+      consumes:
+      - application/json
+      description: Sets the step value for price changes.
+      parameters:
+      - description: Set price change step
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SetPriceChangeStep'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Message indicating the price change step was set
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/api.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.Error'
+      security:
+      - BearerAuth: []
+      summary: Set price change step
+      tags:
+      - Admin Asset Price
   /admin/asset-prices:
     post:
       consumes:

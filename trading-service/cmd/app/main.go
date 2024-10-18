@@ -39,6 +39,7 @@ func main() {
 
 			// cache
 			cache.NewIgnoreInventoryLimitCache,
+			cache.NewTradeLimitsCache,
 
 			// domain services
 			services.NewInventoryDomainService,

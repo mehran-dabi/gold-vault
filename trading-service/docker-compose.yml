@@ -1,0 +1,51 @@
+services:
+  trading-service:
+    build:
+      context: ./  # Path to the trading service
+      dockerfile: Dockerfile
+    ports:
+      - "8087:8081"  # external HTTP
+      - "8088:8082"  # internal HTTP
+      - "50054:50051"  # gRPC
+    environment:
+      - DB_HOST=trading-postgres
+      - REDIS_HOST=trading-redis
+    networks:
+      - app-network
+    restart: on-failure
+    depends_on:
+      - trading-postgres
+      - trading-redis
+
+  trading-postgres:
+    image: postgres:latest
+    container_name: trading-service-pgsql
+    environment:
+      POSTGRES_DB: trading-service
+      POSTGRES_USER: pgsql
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5435:5432"
+    volumes:
+      - trading_postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  trading-redis:
+    image: redis:latest
+    container_name: trading-service-cache
+    ports:
+      - "6382:6379"
+    volumes:
+      - trading_redis_data:/data
+    networks:
+      - app-network
+
+
+volumes:
+  trading_postgres_data:
+  trading_redis_data:
+
+networks:
+  app-network:
+    external: true

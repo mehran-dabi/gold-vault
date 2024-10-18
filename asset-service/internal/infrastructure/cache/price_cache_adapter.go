@@ -84,3 +84,13 @@ func (p *PriceCache) GetAllAssetPrices(ctx context.Context) (map[string]*entity.
 
 	return assetPrices, nil
 }
+
+func (p *PriceCache) SetPriceChangeStep(ctx context.Context, step float64) error {
+	key := assetPriceChangeStep
+	return p.cacheRedisClient.RedisClient.Set(ctx, key, step, 0).Err()
+}
+
+func (p *PriceCache) GetPriceChangeStep(ctx context.Context) (float64, error) {
+	key := assetPriceChangeStep
+	return p.cacheRedisClient.RedisClient.Get(ctx, key).Float64()
+}

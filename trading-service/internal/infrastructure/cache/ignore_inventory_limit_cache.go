@@ -25,6 +25,15 @@ func (i *IgnoreInventoryLimitCache) Set(ctx context.Context) error {
 	return nil
 }
 
+func (i *IgnoreInventoryLimitCache) Unset(ctx context.Context) error {
+	err := i.cacheRedisClient.RedisClient.Set(ctx, ignoreInventoryLimitKey, false, 0).Err()
+	if err != nil {
+		return serr.DBError("Unset", "ignore_inventory_limit", err)
+	}
+
+	return nil
+}
+
 func (i *IgnoreInventoryLimitCache) Get(ctx context.Context) (bool, error) {
 	ignoreInventoryLimit, err := i.cacheRedisClient.RedisClient.Get(ctx, ignoreInventoryLimitKey).Bool()
 	if err != nil {

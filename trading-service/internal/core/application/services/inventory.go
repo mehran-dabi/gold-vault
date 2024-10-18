@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"goldvault/trading-service/internal/core/application/ports"
@@ -16,6 +17,7 @@ type InventoryService struct {
 	transactionDomainService ports.TransactionDomainService
 	walletServiceClient      ports.WalletServiceClient
 	ignoreInvLimitCache      ports.IgnoreInventoryLimitCache
+	tradeLimitsCache         ports.TradeLimitsCache
 }
 
 func NewInventoryService(
@@ -23,12 +25,14 @@ func NewInventoryService(
 	transactionDomainService ports.TransactionDomainService,
 	walletServiceClient ports.WalletServiceClient,
 	ignoreInventoryLimitCache ports.IgnoreInventoryLimitCache,
+	tradeLimitsCache ports.TradeLimitsCache,
 ) *InventoryService {
 	return &InventoryService{
 		inventoryDomainService:   inventoryDomainService,
 		transactionDomainService: transactionDomainService,
 		walletServiceClient:      walletServiceClient,
 		ignoreInvLimitCache:      ignoreInventoryLimitCache,
+		tradeLimitsCache:         tradeLimitsCache,
 	}
 }
 
@@ -58,6 +62,28 @@ func (i *InventoryService) BuyAsset(ctx context.Context, userID int64, assetType
 		return serr.ServiceErr("Inventory.BuyAsset", err.Error(), err, http.StatusInternalServerError)
 	}
 
+	// get the global trade limits
+	limits, err := i.tradeLimitsCache.GetGlobalLimits(ctx, assetType)
+	if err != nil {
+		return serr.ServiceErr("Inventory.BuyAsset", err.Error(), err, http.StatusInternalServerError)
+	}
+
+	if quantity < limits["minBuy"] || quantity > limits["maxBuy"] {
+		formattedErr := fmt.Sprintf("quantity out of range. min: %f, max: %f", limits["minBuy"], limits["maxBuy"])
+		return serr.ServiceErr("Inventory.BuyAsset", formattedErr, nil, http.StatusBadRequest)
+	}
+
+	// check user's daily limit
+	userDailyLimits, err := i.tradeLimitsCache.GetUserDailyLimits(ctx, userID, assetType)
+	if err != nil {
+		return serr.ServiceErr("Inventory.BuyAsset", err.Error(), err, http.StatusInternalServerError)
+	}
+
+	if userDailyLimits["dailyBuyLimit"]+quantity > limits["dailyBuyLimit"] {
+		formattedErr := fmt.Sprintf("daily limit exceeded. max: %f", limits["dailyBuyLimit"])
+		return serr.ServiceErr("Inventory.BuyAsset", formattedErr, nil, http.StatusBadRequest)
+	}
+
 	err = db.Transaction(ctx, sql.LevelReadCommitted, func(tx *sql.Tx) error {
 		// log pending transaction
 		err := i.transactionDomainService.LogTransaction(ctx, tx, transaction)
@@ -73,6 +99,12 @@ func (i *InventoryService) BuyAsset(ctx context.Context, userID int64, assetType
 			}
 			return err
 		}
+
+		err = i.tradeLimitsCache.SetUserDailyLimits(ctx, userID, assetType, userDailyLimits["dailySellLimit"], userDailyLimits["dailyBuyLimit"]+quantity)
+		if err != nil {
+			return serr.ServiceErr("Inventory.BuyAsset", err.Error(), err, http.StatusInternalServerError)
+		}
+
 		return nil
 	})
 	if err != nil {
@@ -118,6 +150,21 @@ func (i *InventoryService) SellAsset(ctx context.Context, userID int64, assetTyp
 		return serr.ServiceErr("Inventory.SellAsset", "insufficient balance to sell asset", nil, http.StatusBadRequest)
 	}
 
+	limits, err := i.tradeLimitsCache.GetGlobalLimits(ctx, assetType)
+	if err != nil {
+		return serr.ServiceErr("Inventory.SellAsset", err.Error(), err, http.StatusInternalServerError)
+	}
+
+	if quantity < limits["minSell"] || quantity > limits["maxSell"] {
+		formattedErr := fmt.Sprintf("quantity out of range. min: %f, max: %f", limits["minSell"], limits["maxSell"])
+		return serr.ServiceErr("Inventory.SellAsset", formattedErr, nil, http.StatusBadRequest)
+	}
+
+	userDailyLimits, err := i.tradeLimitsCache.GetUserDailyLimits(ctx, userID, assetType)
+	if err != nil {
+		return serr.ServiceErr("Inventory.SellAsset", err.Error(), err, http.StatusInternalServerError)
+	}
+
 	err = db.Transaction(ctx, sql.LevelReadCommitted, func(tx *sql.Tx) error {
 		// log pending transaction
 		err := i.transactionDomainService.LogTransaction(ctx, tx, transaction)
@@ -131,7 +178,12 @@ func (i *InventoryService) SellAsset(ctx context.Context, userID int64, assetTyp
 			if err := i.transactionDomainService.UpdateTransactionStatus(ctx, transaction.ID, entity.TransactionStatusFailed.String()); err != nil {
 				return err
 			}
-			return err
+			return serr.ServiceErr("Inventory.SellAsset", err.Error(), err, http.StatusInternalServerError)
+		}
+
+		err = i.tradeLimitsCache.SetUserDailyLimits(ctx, userID, assetType, userDailyLimits["dailySellLimit"]+quantity, userDailyLimits["dailyBuyLimit"])
+		if err != nil {
+			return serr.ServiceErr("Inventory.SellAsset", err.Error(), err, http.StatusInternalServerError)
 		}
 
 		return nil
@@ -177,4 +229,19 @@ func (i *InventoryService) UpdateInventoryQuantity(ctx context.Context, assetTyp
 
 func (i *InventoryService) DeleteInventory(ctx context.Context, assetType string) error {
 	return i.inventoryDomainService.DeleteInventory(ctx, assetType)
+}
+
+func (i *InventoryService) UpdateIgnoreInventoryLimit(ctx context.Context, ignore bool) error {
+	if ignore {
+		return i.ignoreInvLimitCache.Set(ctx)
+	}
+	return i.ignoreInvLimitCache.Unset(ctx)
+}
+
+func (i *InventoryService) SetGlobalTradeLimits(ctx context.Context, assetType string, minBuy, minSell, maxBuy, maxSell, dailyBuyLimit, dailySellLimit float64) error {
+	return i.tradeLimitsCache.SetGlobalLimits(ctx, assetType, minBuy, minSell, maxBuy, maxSell, dailyBuyLimit, dailySellLimit)
+}
+
+func (i *InventoryService) GetGlobalTradeLimits(ctx context.Context, assetType string) (map[string]float64, error) {
+	return i.tradeLimitsCache.GetGlobalLimits(ctx, assetType)
 }

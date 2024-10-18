@@ -1,0 +1,51 @@
+services:
+  asset-service:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"  # external HTTP
+      - "8082:8082"  # internal HTTP
+      - "50051:50051"  # gRPC
+    environment:
+      - DB_HOST=asset-postgres
+      - REDIS_HOST=asset-redis
+    networks:
+      - app-network
+    restart: on-failure
+    depends_on:
+      - asset-postgres
+      - asset-redis
+  asset-postgres:
+    image: postgres:latest
+    container_name: asset-service-pgsql
+    environment:
+      POSTGRES_DB: asset-service
+      POSTGRES_USER: pgsql
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5432:5432"
+    volumes:
+      - asset_postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  asset-redis:
+    image: redis:latest
+    container_name: asset-service-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - asset_redis_data:/data
+    networks:
+      - app-network
+
+volumes:
+  asset_postgres_data:
+  asset_redis_data:
+
+networks:
+  app-network:
+    external: true
+
+

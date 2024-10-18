@@ -68,3 +68,17 @@ func (a *AssetPriceDomainService) DeleteAssetPrice(ctx context.Context, assetTyp
 
 	return nil
 }
+
+func (a *AssetPriceDomainService) UpdateAssetPriceByStep(ctx context.Context, step float64, assetType string) error {
+	// validate asset type
+	if !entity.IsValidAssetType(assetType) {
+		return fmt.Errorf("invalid asset type")
+	}
+
+	err := a.assetPricePersistence.UpdateAssetPriceByStep(ctx, step, assetType)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -1,0 +1,17 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ staging ]
+
+jobs:
+  deploy_staging:
+    runs-on: staging
+    steps:
+    - uses: actions/checkout@v4
+    # - run: |
+    #     cat >> file.txt << EOL
+    #       $STAGING_ENV
+    #     EOL 
+    - run: docker compose build
+    - run: docker compose up -d --remove-orphans

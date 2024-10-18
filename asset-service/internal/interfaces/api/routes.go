@@ -18,6 +18,9 @@ func SetupAssetPriceRoutes(s *server.Server, a *AssetPriceHandler, ad *AdminAsse
 	{
 		admin.POST("/asset-prices", ad.UpsertPrice)
 		admin.DELETE("/asset-prices/:assetType", ad.DeleteAssetPrice)
+		admin.PUT("/asset-prices/:assetType/adjust-by-step", ad.UpdateAssetPriceByStep)
+		admin.POST("/asset-prices/step", ad.SetPriceChangeStep)
+		admin.GET("/asset-prices/step", ad.GetPriceChangeStep)
 	}
 }
 

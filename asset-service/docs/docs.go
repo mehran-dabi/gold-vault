@@ -15,6 +15,161 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/asset-price/get-step": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves the current step value used for price changes.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin Asset Price"
+                ],
+                "summary": "Get price change step",
+                "responses": {
+                    "200": {
+                        "description": "The current price change step",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "number"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/asset-price/set-step": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Sets the step value for price changes.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin Asset Price"
+                ],
+                "summary": "Set price change step",
+                "parameters": [
+                    {
+                        "description": "Set price change step",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SetPriceChangeStep"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message indicating the price change step was set",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/asset-price/{asset_type}/adjust-by-step": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates the price of an asset by a predefined step for the specified asset type.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin Asset Price"
+                ],
+                "summary": "Update asset price by step",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Asset type",
+                        "name": "assetType",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message indicating the price was updated",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid asset type or missing parameters",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/asset-prices": {
             "post": {
                 "security": [
@@ -338,6 +493,17 @@ const docTemplate = `{
                 },
                 "trace_id": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.SetPriceChangeStep": {
+            "type": "object",
+            "required": [
+                "step"
+            ],
+            "properties": {
+                "step": {
+                    "type": "number"
                 }
             }
         },

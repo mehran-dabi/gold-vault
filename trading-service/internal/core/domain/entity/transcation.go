@@ -85,3 +85,10 @@ func (t *Transaction) Validate() error {
 
 	return nil
 }
+
+type TransactionsSummary struct {
+	StartDate  time.Time
+	EndDate    time.Time
+	TotalSells float64
+	TotalBuys  float64
+}

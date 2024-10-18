@@ -3,6 +3,7 @@ package persistence
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"goldvault/trading-service/internal/core/application/ports"
 	"goldvault/trading-service/internal/core/domain/entity"
@@ -89,4 +90,33 @@ func (t *TransactionPersistence) GetTransactions(ctx context.Context, limit, off
 		transactions = append(transactions, transactionDB.ToEntity())
 	}
 	return transactions, nil
+}
+
+func (t *TransactionPersistence) GetTransactionSummaryForSingleDay(ctx context.Context, date time.Time, assetType string) (*entity.TransactionsSummary, error) {
+	var totalBuys, totalSells float64
+	err := t.db.QueryRowContext(ctx, queries.GetTransactionsSummarySingleDay, date, assetType).Scan(&totalBuys, &totalSells)
+	if err != nil {
+		return nil, serr.DBError("GetTransactionSummaryForSingleDay", "transactions", err)
+	}
+
+	return &entity.TransactionsSummary{
+		StartDate:  date,
+		EndDate:    date,
+		TotalBuys:  totalBuys,
+		TotalSells: totalSells,
+	}, nil
+}
+
+func (t *TransactionPersistence) GetTotalTransactionsSummary(ctx context.Context, assetType string) (*entity.TransactionsSummary, error) {
+	var totalBuys, totalSells float64
+	err := t.db.QueryRowContext(ctx, queries.GetTransactionsSummary, assetType).Scan(&totalBuys, &totalSells)
+	if err != nil {
+		return nil, serr.DBError("GetTotalTransactionsSummary", "transactions", err)
+	}
+
+	return &entity.TransactionsSummary{
+		EndDate:    time.Now(),
+		TotalBuys:  totalBuys,
+		TotalSells: totalSells,
+	}, nil
 }

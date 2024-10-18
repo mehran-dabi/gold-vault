@@ -17,6 +17,15 @@ type (
 		AssetType string  `json:"asset_type" validate:"required"`
 		Quantity  float64 `json:"quantity" validate:"required,gt=0"`
 	}
+
+	SetGlobalLimitsRequest struct {
+		MinBuy         float64 `json:"min_buy" validate:"required,gt=0"`
+		MaxBuy         float64 `json:"max_buy" validate:"required,gt=0"`
+		MinSell        float64 `json:"min_sell" validate:"required,gt=0"`
+		MaxSell        float64 `json:"max_sell" validate:"required,gt=0"`
+		DailyBuyLimit  float64 `json:"daily_buy_limit" validate:"required,gt=0"`
+		DailySellLimit float64 `json:"daily_sell_limit" validate:"required,gt=0"`
+	}
 )
 
 func (b *BuyAssetRequest) Validate() error {

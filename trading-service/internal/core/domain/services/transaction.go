@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"goldvault/trading-service/internal/core/application/ports"
 	"goldvault/trading-service/internal/core/domain/entity"
@@ -54,4 +55,23 @@ func (t *TransactionDomainService) GetTransactions(ctx context.Context, limit, o
 	}
 
 	return transactions, nil
+}
+
+func (t *TransactionDomainService) GetSingleDaySummary(ctx context.Context, date time.Time, assetType string) (*entity.TransactionsSummary, error) {
+	summary, err := t.transactionPersistence.GetTransactionSummaryForSingleDay(ctx, date, assetType)
+	if err != nil {
+		return nil, err
+	}
+
+	return summary, nil
+}
+
+func (t *TransactionDomainService) GetTotalSummary(ctx context.Context, assetType string) (*entity.TransactionsSummary, error) {
+	summary, err := t.transactionPersistence.GetTotalTransactionsSummary(ctx, assetType)
+	if err != nil {
+		return nil, err
+	}
+
+	return summary, nil
+
 }

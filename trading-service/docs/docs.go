@@ -15,6 +15,58 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/ignore-inventory-limit": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates the ignore inventory limit status for the trading service.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin Inventory"
+                ],
+                "summary": "Update inventory limit ignore status",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "new status of the flag",
+                        "name": "ignore",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ignore inventory limit updated successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/inventory": {
             "get": {
                 "security": [
@@ -183,6 +235,129 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/inventory/{assetType}/limits": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves the global trade limits for a specified asset type.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin Inventory"
+                ],
+                "summary": "Get global trade limits",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Asset type",
+                        "name": "assetType",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Trade limits for the asset type",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid asset type",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/trades/inventory/{assetType}/limits": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates the global trade limits for buying and selling assets.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin Inventory"
+                ],
+                "summary": "Set global trade limits",
+                "parameters": [
+                    {
+                        "description": "Set global trade limits request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SetGlobalLimitsRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Asset type to delete from inventory",
+                        "name": "assetType",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message indicating global trade limits were updated successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/transactions": {
             "get": {
                 "security": [
@@ -230,6 +405,119 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Invalid limit or offset",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/transactions/summary/single-day": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves a summary of transactions for a specific asset type on a given date.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin Transactions"
+                ],
+                "summary": "Get single day transaction summary",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Date in YYYY-MM-DD format",
+                        "name": "date",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Asset type",
+                        "name": "assetType",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Summary of transactions for the day",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid date format or missing parameters",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/transactions/summary/total": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves the total summary of all transactions for a specific asset type.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin Transactions"
+                ],
+                "summary": "Get total transaction summary",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Asset type",
+                        "name": "assetType",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Total summary of transactions",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid asset type or missing parameters",
                         "schema": {
                             "$ref": "#/definitions/api.Error"
                         }
@@ -548,6 +836,37 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "price": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.SetGlobalLimitsRequest": {
+            "type": "object",
+            "required": [
+                "daily_buy_limit",
+                "daily_sell_limit",
+                "max_buy",
+                "max_sell",
+                "min_buy",
+                "min_sell"
+            ],
+            "properties": {
+                "daily_buy_limit": {
+                    "type": "number"
+                },
+                "daily_sell_limit": {
+                    "type": "number"
+                },
+                "max_buy": {
+                    "type": "number"
+                },
+                "max_sell": {
+                    "type": "number"
+                },
+                "min_buy": {
+                    "type": "number"
+                },
+                "min_sell": {
                     "type": "number"
                 }
             }
