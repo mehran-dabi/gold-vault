@@ -20,7 +20,7 @@ func SetupAdminRoutes(s *server.Server, i *InventoryAdminHandler, t *Transaction
 	admin.Use(middlewares.JWTMiddleware(), middlewares.RoleMiddleware("admin"))
 	{
 		admin.PATCH("/ignore-inventory-limit", i.UpdateIgnoreInventoryLimit)
-		inventory := admin.Group("/trades/inventory")
+		inventory := admin.Group("/inventory")
 		{
 			inventory.GET("", i.GetInventory)
 			inventory.POST("", i.CreateInventory)
