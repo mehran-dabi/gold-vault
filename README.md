@@ -49,13 +49,13 @@ The project follows a hexagonal architecture to separate business logic from inf
 │   │       └── entities
 │   ├── infrastructure
 │   │       ├── db
+│   │       │    └── migrations
 │   │       ├── cache
 │   │       └── persistence   
 │   ├── interfaces
 │   │   ├── api
 │   │   └── dto
 │   └── server
-├── migrations
 └── proto
 ```
 
