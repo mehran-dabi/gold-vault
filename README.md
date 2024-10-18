@@ -47,7 +47,7 @@ The project follows a hexagonal architecture to separate business logic from inf
 │   │   │   └── services
 │   │   └── domain
 │   │       └── entities
-│   └── infrastructure
+│   ├── infrastructure
 │   │       ├── db
 │   │       ├── cache
 │   │       └── persistence   
