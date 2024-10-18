@@ -26,6 +26,7 @@ func SetupAdminRoutes(s *server.Server, i *InventoryAdminHandler, t *Transaction
 			inventory.POST("", i.CreateInventory)
 			inventory.DELETE("/:assetType", i.DeleteInventory)
 			inventory.POST("/:assetType", i.SetGlobalTradeLimits)
+			inventory.GET("/:assetType", i.GetGlobalTradeLimits)
 		}
 
 		transactions := admin.Group("/transactions")
